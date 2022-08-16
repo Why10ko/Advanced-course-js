@@ -15,10 +15,9 @@ const renderProduct = ({title="",price=0}) =>
   </div>`
 
 
-const renderPage = list => {
-  const productList = list.map(item => renderProduct(item)).join('');
+const renderPage = list => { 
   // массив преобразовывается в строковой тип вместе с запятыми, метод join('') с пустой стройго помогает решить данную проблему. 
-  document.querySelector('.products').innerHTML = productList;
+  document.querySelector('.products').innerHTML = list.map(item => renderProduct(item)).join('');;
 }
 
 renderPage(product);
