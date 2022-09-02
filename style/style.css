@@ -72,6 +72,38 @@ main .products .product-cell button {
   }
 }
 
+main .productsBasket {
+  max-width: 400px;
+  height: 400px;
+  background-color: black;
+  color: aliceblue;
+  opacity: 0.50;
+  margin: 20px auto;
+  position: relative;
+}
+
+main .productsBasket .cart-item {
+  border: 2px solid black;
+  width: 150px;
+  height: 130px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -ms-flex-pack: distribute;
+      justify-content: space-around;
+}
+
+main .invisible {
+  display: none;
+}
+
 @media screen and (max-width: 768px) {
   main .products {
     -webkit-box-align: center;

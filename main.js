@@ -1,36 +1,38 @@
-class ProductList {
-  constructor(container='.products'){
-    this.container = container;
-    this.goods = [];
-    this._fetchProducts();
-    this.render();
-    this.totalSum();
+const API = 'https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses';
+
+
+class ProductsList {
+  constructor(container = '.products'){
+      this.container = container;
+      this.goods = [];
+      this._getProducts()
+          .then(data => {
+               this.goods = data;
+               this.render()
+          });
   }
-  _fetchProducts(){
-    this.goods = [
-      {id:1,title:'Notebook',price:200000},
-      {id:2,title:'Mouse',price:2000},
-      {id:3,title:'Keybord',price:4000},
-      {id:4,title:'Phone',price:15000}
-    ];
+  _getProducts(){ 
+      return fetch(`${API}/catalogData.json`)
+          .then(result => result.json())
+          .catch(error => {
+              console.log(error);
+          });
+  }
+  calcSum(){
+    return this.allProducts.reduce((accum, item) => accum += item.price, 0);
   }
   render(){
-    const block = document.querySelector(this.container);
-    for(let product of this.goods){
-      const item = new ProductItem(product);
-      block.insertAdjacentHTML("beforeend",item.render());
-    }
-  }
-  totalSum(){
-    return this.goods.reduce((firstArg, {price}) => {
-      return firstArg + price;
-    },0)
+      const block = document.querySelector(this.container);
+      for (let product of this.goods){
+          const productObj = new ProductItem(product);
+          block.insertAdjacentHTML('beforeend', productObj.render());
+      }
   }
 }
 
 class ProductItem{
   constructor(product){
-    this.title = product.title;
+    this.title = product.product_name;
     this.id = product.id;
     this.price = product.price;
   }
@@ -43,50 +45,57 @@ class ProductItem{
   }
 }
 
-let list = new ProductList();
+let list = new ProductsList();
 
-// Выводим сумму ксех товаров:
-let total = list.totalSum();
-console.log(total);
 
+///
 class Basket {
-  addGoo () {
-
+  constructor(container = '.productsBasket'){
+      this.container = container;
+      this.basketGoods = [];
+      this._clickBasket();
+      this._getBasketProducts()
+          .then(data => {
+               this.basketGoods = data.contents;
+               this.render()
+          });
   }
-  removeGood () {
-
+  _getBasketProducts(){ 
+      return fetch(`${API}/getBasket.json`)
+          .then(result => result.json())
+          .catch(error => {
+              console.log(error);
+          });
   }
-  changeGood() {
-
+  
+  render(){
+      const block = document.querySelector(this.container);
+      for (let product of this.basketGoods){
+          const productObjBasket = new ProductBasketItem(product);
+          block.insertAdjacentHTML('beforeend', productObjBasket.render(product));
+      }
   }
-  render() {
-
+  _clickBasket(){
+    document.querySelector('.basketButton').addEventListener('click', () => {
+      document.querySelector(this.container).classList.toggle('invisible')
+    })
   }
- }
+}
 
- class ElemBasket {
-  render() {
-    
+
+class ProductBasketItem{
+  render(product){
+    return `<div class="cart-item" data-id="${product.id_product}">
+            <div class="product-bio">
+            <div class="product-desc">
+            <p class="product-title">${product.product_name}</p>
+            <p class="product-quantity">Quantity: ${product.quantity}</p>
+            <p class="product-single-price">${product.price}</p>
+            </div>
+            </div>
+            
+            </div>`
   }
- }
+}
 
-// const product = [
-//   {id:1,title:'Notebook',price:200000},
-//   {id:2,title:'Mouse',price:2000},
-//   {id:3,title:'Keybord',price:4000},
-//   {id:4,title:'Phone',price:15000}
-// ];
-
-// const renderProduct = ({title="",price=0}) => 
-//   `<div class="product-cell">
-//     <h2>${title}</h2>
-//     <p>${price}</p>
-//     <button>Купить</button>
-//   </div>`
-
-
-// const renderPage = list => {  
-//   document.querySelector('.products').innerHTML = list.map(item => renderProduct(item)).join('');;
-// }
-
-// renderPage(product);
+let objBasket = new Basket();
