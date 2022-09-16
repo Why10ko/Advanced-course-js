@@ -1,101 +1,76 @@
 const API = 'https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses';
 
+const app = new Vue({
+    el: '#app',
+    data: {
+        userSearch: '',
+        showCart: false,
+        catalogUrl: '/catalogData.json',
+        cartUrl: '/getBasket.json',
+        cartItems: [],
+        filtered: [],
+        imgCart: 'https://via.placeholder.com/50x100',
+        products: [],
+        imgProduct: 'https://via.placeholder.com/200x150'
+    },
+    methods: {
+        getJson(url){
+            return fetch(url)
+                .then(result => result.json())
+                .catch(error => console.log(error))
+        },
+        addProduct(item){
+            this.getJson(`${API}/addToBasket.json`)
+                .then(data => {
+                    if(data.result === 1){
+                       let find = this.cartItems.find(el => el.id_product === item.id_product);
+                       if(find){
+                           find.quantity++;
+                       } else {
+                           const prod = Object.assign({quantity: 1}, item);//создание нового объекта на основе двух, указанных в параметрах
+                           this.cartItems.push(prod)
+                       }
+                    }
+                })
+        },
+        remove(item){
+            this.getJson(`${API}/addToBasket.json`)
+                .then(data => {
+                    if (data.result === 1) {
+                        if(item.quantity>1){
+                            item.quantity--;
+                        } else {
+                            this.cartItems.splice(this.cartItems.indexOf(item), 1);
+                        }
+                    }
+                })
+        },
+        filter(){
+            let regexp = new RegExp(this.userSearch, 'i');
+            this.filtered =  this.products.filter(el => regexp.test(el.product_name));
+        }
+    },
+    mounted(){
+        this.getJson(`${API + this.cartUrl}`)
+            .then(data => {
+                for (let item of data.contents){
+                    this.cartItems.push(item);
+                }
+            });
+        this.getJson(`${API + this.catalogUrl}`)
+            .then(data => {
+                for (let item of data){
+                    this.$data.products.push(item);
+                    this.$data.filtered.push(item);
+                }
+            });
+        this.getJson(`getProducts.json`)
+            .then(data => {
+                for(let item of data){
+                    this.products.push(item);
+                    this.filtered.push(item);
+                }
+            })
+    }
 
-class ProductsList {
-  constructor(container = '.products'){
-      this.container = container;
-      this.goods = [];
-      this._getProducts()
-          .then(data => {
-               this.goods = data;
-               this.render()
-          });
-  }
-  _getProducts(){ 
-      return fetch(`${API}/catalogData.json`)
-          .then(result => result.json())
-          .catch(error => {
-              console.log(error);
-          });
-  }
-  calcSum(){
-    return this.allProducts.reduce((accum, item) => accum += item.price, 0);
-  }
-  render(){
-      const block = document.querySelector(this.container);
-      for (let product of this.goods){
-          const productObj = new ProductItem(product);
-          block.insertAdjacentHTML('beforeend', productObj.render());
-      }
-  }
-}
-
-class ProductItem{
-  constructor(product){
-    this.title = product.product_name;
-    this.id = product.id;
-    this.price = product.price;
-  }
-  render(){
-    return `<div class="product-cell">
-    <h2>${this.title}</h2>
-    <p>${this.price}</p>
-    <button>Купить</button>
-  </div>`
-  }
-}
-
-let list = new ProductsList();
-
-
-///
-class Basket {
-  constructor(container = '.productsBasket'){
-      this.container = container;
-      this.basketGoods = [];
-      this._clickBasket();
-      this._getBasketProducts()
-          .then(data => {
-               this.basketGoods = data.contents;
-               this.render()
-          });
-  }
-  _getBasketProducts(){ 
-      return fetch(`${API}/getBasket.json`)
-          .then(result => result.json())
-          .catch(error => {
-              console.log(error);
-          });
-  }
-  
-  render(){
-      const block = document.querySelector(this.container);
-      for (let product of this.basketGoods){
-          const productObjBasket = new ProductBasketItem(product);
-          block.insertAdjacentHTML('beforeend', productObjBasket.render(product));
-      }
-  }
-  _clickBasket(){
-    document.querySelector('.basketButton').addEventListener('click', () => {
-      document.querySelector(this.container).classList.toggle('invisible')
-    })
-  }
-}
-
-
-class ProductBasketItem{
-  render(product){
-    return `<div class="cart-item" data-id="${product.id_product}">
-            <div class="product-bio">
-            <div class="product-desc">
-            <p class="product-title">${product.product_name}</p>
-            <p class="product-quantity">Quantity: ${product.quantity}</p>
-            <p class="product-single-price">${product.price}</p>
-            </div>
-            </div>
-            
-            </div>`
-  }
-}
-
-let objBasket = new Basket();
+});
